@@ -3,837 +3,904 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Inferno: Stable Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PichaTime Studio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --bg-color: #1e1e1e;
-            --card-bg: #252526;
+            --bg-app: #1e1e1e;
+            --bg-sidebar: #252526;
+            --bg-header: #2d2d2d;
+            --text-main: #e0e0e0;
+            --text-muted: #858585;
             --accent: #007acc;
-            --text-main: #d4d4d4;
-            --inferno: #ff4757;
-            --success: #2ecc71;
+            --border: #383838;
+            --font-ui: 'Segoe UI', system-ui, sans-serif;
+            --font-note: 'Patrick Hand', cursive;
+            /* Playful Font */
+            --shadow-rest: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            --shadow-lift: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
         }
 
         body {
-            font-family: 'Segoe UI', 'Consolas', sans-serif;
-            background-color: var(--bg-color);
+            font-family: var(--font-ui);
+            background-color: var(--bg-app);
             color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
+            touch-action: none;
         }
 
-        h1 {
-            margin-bottom: 5px;
+        /* --- SIDEBAR --- */
+        #sidebar {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: transform 0.3s ease, width 0.3s ease;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            background: #181818;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .app-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+
+        .file-actions button {
+            background: #333;
+            border: 1px solid #444;
+            color: #ccc;
+            padding: 5px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .file-actions button:hover {
+            background: #444;
+            color: white;
+        }
+
+        .file-actions button.primary {
+            border-color: var(--accent);
             color: var(--accent);
         }
 
-        .subtitle {
-            font-size: 0.9em;
-            opacity: 0.7;
-            margin-bottom: 25px;
-            font-family: 'Consolas', monospace;
+        #file-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
         }
 
-        /* WRAPPERS */
-        .hud,
-        .game-container,
-        .forge-container {
-            width: 100%;
-            max-width: 800px;
-            background: var(--card-bg);
-            border: 1px solid #333;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        /* HUD */
-        .hud {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-        }
-
-        .stat-box {
-            text-align: center;
-        }
-
-        .stat-label {
-            font-size: 0.7em;
-            color: #888;
-            letter-spacing: 1px;
-        }
-
-        .stat-value {
-            font-size: 1.2em;
-            font-weight: bold;
-            font-family: 'Consolas', monospace;
-        }
-
-        /* GAME AREA */
-        .game-container {
-            padding: 20px;
-        }
-
-        /* Navigation */
-        .nav-bar {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-
-        .nav-btn {
-            background: #333;
-            color: #ddd;
-            border: 1px solid #444;
-            padding: 5px 15px;
+        .file-item {
+            padding: 8px 15px;
             cursor: pointer;
-            border-radius: 4px;
+            border-left: 3px solid transparent;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.1s;
         }
 
-        .nav-btn:hover:not(:disabled) {
-            border-color: var(--accent);
+        .file-item:hover {
+            background: #2a2d2e;
+        }
+
+        .file-item.active {
+            background: #37373d;
+            border-left-color: var(--accent);
+        }
+
+        .file-name {
+            font-size: 0.9rem;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .file-opt {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .file-item:hover .file-opt {
+            opacity: 1;
+        }
+
+        .file-opt i:hover {
+            color: #ff4757;
+        }
+
+        /* --- MAIN AREA --- */
+        #main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            min-width: 0;
+            transition: margin 0.3s ease;
+        }
+
+        /* --- TOOLBAR --- */
+        #toolbar {
+            height: 46px;
+            background: var(--bg-header);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 10px;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .tab-switcher {
+            display: flex;
+            background: #222;
+            border-radius: 4px;
+            padding: 2px;
+            border: 1px solid #333;
+            margin-right: 15px;
+        }
+
+        .tab-btn {
+            padding: 4px 12px;
+            border: none;
+            background: transparent;
+            color: #888;
+            cursor: pointer;
+            font-size: 0.8rem;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .tab-btn.active {
+            background: #3c3c3c;
+            color: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .tool-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            border-right: 1px solid #444;
+            padding-right: 10px;
+            margin-right: 5px;
+        }
+
+        .tool-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #ccc;
+            width: 28px;
+            height: 28px;
+            border-radius: 3px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-btn:hover {
             background: #444;
         }
 
-        .nav-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        /* CODE DISPLAY (Question) */
-        .code-window {
-            background: #1e1e1e;
-            border: 1px solid #444;
-            padding: 20px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .code-window::before {
-            content: "question.py";
-            position: absolute;
-            top: -10px;
-            left: 10px;
-            background: var(--accent);
-            color: white;
-            padding: 2px 8px;
-            font-size: 0.75em;
-            border-radius: 4px;
-        }
-
-        pre {
-            margin: 0;
-            font-family: 'Consolas', monospace;
-            font-size: 1.1em;
-            white-space: pre-wrap;
-            line-height: 1.5;
-        }
-
-        /* BUTTONS */
-        .controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .btn {
-            background: #2d2d2d;
-            border: 1px solid #444;
-            color: #ccc;
-            padding: 15px;
-            cursor: pointer;
-            font-family: 'Consolas', monospace;
-            font-size: 1em;
-            border-radius: 6px;
-            text-align: left;
-            transition: 0.2s;
-        }
-
-        .btn:hover:not(:disabled) {
-            background: #383838;
-            border-color: var(--accent);
-        }
-
-        .btn.correct {
-            background: #1b472a;
-            border-color: var(--success);
-            color: white;
-        }
-
-        .btn.wrong {
-            background: #581b23;
-            border-color: var(--inferno);
-            color: white;
-        }
-
-        /* HINT */
-        .hint-section {
-            margin-top: 15px;
-            text-align: center;
-        }
-
-        .hint-text {
-            display: none;
-            color: #dcdcaa;
-            font-style: italic;
-            margin-top: 5px;
-        }
-
-        .hint-btn {
-            background: none;
+        /* --- ZEN MODE STYLES --- */
+        body.zen-active #sidebar {
+            transform: translateX(-100%);
+            width: 0;
             border: none;
-            color: #666;
-            text-decoration: underline;
-            cursor: pointer;
         }
 
-        /* --- THE FORGE (IDE) --- */
-        .forge-header {
-            padding: 8px 15px;
-            background: #333;
-            color: #888;
-            font-size: 0.85em;
-            border-bottom: 1px solid #444;
-            border-radius: 8px 8px 0 0;
-        }
-
-        .ide-wrapper {
-            position: relative;
-            height: 250px;
-            background: #1e1e1e;
-            border-radius: 0 0 8px 8px;
+        body.zen-active #toolbar {
+            transform: translateY(-100%);
+            height: 0;
             overflow: hidden;
-            /* Contains the absolute elements */
+            padding: 0;
+            border: none;
         }
 
-        .ide-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
+        #exit-zen-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            z-index: 9999;
+            display: none;
+            font-size: 0.8rem;
+            backdrop-filter: blur(5px);
+        }
+
+        body.zen-active #exit-zen-btn {
+            display: block;
+        }
+
+        /* --- VIEWS --- */
+        .view-layer {
+            flex: 1;
+            position: relative;
+            display: none;
+            overflow: hidden;
+        }
+
+        .view-layer.active {
+            display: block;
+        }
+
+        /* MOODBOARD */
+        #mb-viewport {
             width: 100%;
             height: 100%;
-            padding: 15px;
-            box-sizing: border-box;
-            font-family: 'Consolas', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            white-space: pre;
             overflow: auto;
-            border: none;
-            outline: none;
-            tab-size: 4;
+            background: #111;
+            position: relative;
+            cursor: default;
         }
 
-        /* The formatting layer (Bottom) */
-        pre.ide-layer {
-            z-index: 5;
+        /* MASSIVE CANVAS FIX */
+        #mb-canvas {
+            width: 15000px;
+            /* Increased from 5000px to cover zoom-out */
+            height: 15000px;
+            background-color: #151515;
+            background-image: radial-gradient(#3a3a3a 1.5px, transparent 1.5px);
+            background-size: 25px 25px;
+            position: relative;
+            transform-origin: 0 0;
+        }
+
+        /* --- MATERIAL DESIGN ITEMS --- */
+        .mb-item {
+            position: absolute;
+            min-width: 50px;
+            min-height: 50px;
+            border-radius: 6px;
+            cursor: default;
+            transition: box-shadow 0.2s, transform 0.2s;
+            box-shadow: var(--shadow-rest);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .mb-item.selected {
+            box-shadow: var(--shadow-lift);
+            transform: scale(1.01);
+            z-index: 100;
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        /* NOTE STRUCTURE */
+        .mb-note {
+            background: #444;
+            color: #222;
+            /* Darker text for better contrast on pastel */
+        }
+
+        .drag-handle-bar {
+            height: 20px;
+            width: 100%;
+            cursor: grab;
+            background: rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+
+        .drag-handle-bar:active {
+            cursor: grabbing;
+        }
+
+        .note-content {
+            flex: 1;
+            padding: 5px 15px 15px 15px;
+            font-family: var(--font-note);
+            /* PATRICK HAND FONT */
+            font-size: 1.3rem;
+            /* Slightly larger for handwritten feel */
+            line-height: 1.4;
+            overflow-y: auto;
+            cursor: text;
+        }
+
+        .note-content:empty:before {
+            content: "Type here...";
+            color: rgba(0, 0, 0, 0.3);
+        }
+
+        .mb-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             pointer-events: none;
-            /* Let clicks pass through to textarea */
-            margin: 0;
+            border-radius: 6px;
         }
 
-        /* The typing layer (Top) */
-        textarea.ide-layer {
+        .resize-handle {
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            cursor: se-resize;
+            opacity: 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.2s;
             z-index: 10;
-            color: transparent;
-            /* Text is invisible so we see the layer below */
-            background: transparent;
-            caret-color: white;
-            /* Cursor remains visible */
-            resize: none;
         }
 
-        /* SYNTAX COLORS */
-        .kw {
-            color: #569cd6;
-            font-weight: bold;
+        .mb-item:hover .resize-handle {
+            opacity: 1;
         }
 
-        /* Keywords */
-        .fn {
-            color: #dcdcaa;
+        /* NOTEPAD */
+        #notepad-container {
+            height: 100%;
+            overflow-y: auto;
+            background: #1e1e1e;
+            display: flex;
+            justify-content: center;
         }
 
-        /* Functions */
-        .str {
-            color: #ce9178;
+        #notepad-editor {
+            width: 100%;
+            max-width: 850px;
+            padding: 50px;
+            color: #d4d4d4;
+            outline: none;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            min-height: 100%;
         }
 
-        /* Strings */
-        .num {
-            color: #b5cea8;
+        #notepad-editor h1 {
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
 
-        /* Numbers */
-        .cmt {
-            color: #6a9955;
-            font-style: italic;
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 9999;
+            pointer-events: none;
         }
-
-        /* Comments */
     </style>
 </head>
 
 <body>
 
-    <h1>PYTHON INFERNO</h1>
-    <div class="subtitle">v3.1 // Stable Edition</div>
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <div class="app-title"><i class="fas fa-book-open"></i> NOTE_INDEX</div>
+            <div class="file-actions">
+                <button class="primary" onclick="createProject()" title="New Project"><i class="fas fa-plus"></i>
+                    New</button>
+                <button onclick="saveSelf()" title="Save HTML"><i class="fas fa-save"></i> Save</button>
+                <button onclick="exportProject()" title="Export JSON"><i class="fas fa-file-export"></i> Exp</button>
+                <button onclick="triggerImport()" title="Import JSON"><i class="fas fa-file-import"></i> Imp</button>
+                <button onclick="backupAll()" title="Backup All"><i class="fas fa-archive"></i> Bkp</button>
+            </div>
+        </div>
+        <div id="file-list"></div>
+    </div>
 
-    <div class="hud">
-        <div class="stat-box">
-            <div class="stat-label">SCORE</div>
-            <div class="stat-value" id="score">0</div>
+    <div id="main-area">
+
+        <div id="toolbar">
+            <div class="tab-switcher">
+                <button class="tab-btn active" id="btn-moodboard" onclick="switchTab('moodboard')">Moodboard</button>
+                <button class="tab-btn" id="btn-notepad" onclick="switchTab('notepad')">Notebook</button>
+            </div>
+
+            <div class="tool-group">
+                <button class="tool-btn" onclick="execCmd('bold')" title="Bold"><i class="fas fa-bold"></i></button>
+                <button class="tool-btn" onclick="execCmd('italic')" title="Italic"><i
+                        class="fas fa-italic"></i></button>
+                <button class="tool-btn" onclick="execCmd('underline')" title="Underline"><i
+                        class="fas fa-underline"></i></button>
+                <div
+                    style="position:relative; width:28px; height:28px; display:flex; align-items:center; justify-content:center;">
+                    <i class="fas fa-palette"
+                        style="color:#ccc; font-size:14px; position:absolute; pointer-events:none;"></i>
+                    <input type="color" onchange="applyColor(this.value)" title="Color"
+                        style="opacity:0; width:100%; height:100%; cursor:pointer;">
+                </div>
+            </div>
+
+            <div class="tool-group">
+                <select onchange="execCmd('formatBlock', this.value)"
+                    style="background:#333;color:#ccc;border:1px solid #444;">
+                    <option value="p">Normal</option>
+                    <option value="h1">Header 1</option>
+                    <option value="h2">Header 2</option>
+                    <option value="blockquote">Quote</option>
+                </select>
+                <select onchange="execCmd('fontSize', this.value)"
+                    style="background:#333;color:#ccc;border:1px solid #444;">
+                    <option value="3">Size</option>
+                    <option value="1">Small</option>
+                    <option value="5">Big</option>
+                    <option value="7">Huge</option>
+                </select>
+            </div>
+
+            <div style="flex:1"></div>
+
+            <div class="tool-group">
+                <button class="tool-btn" onclick="toggleZen()" title="Zen Mode (Spacebar)"><i
+                        class="fas fa-expand"></i></button>
+                <button class="tool-btn" onclick="addStickyNote()" title="Sticky Note"><i
+                        class="fas fa-sticky-note"></i></button>
+                <button class="tool-btn" onclick="document.getElementById('img-input').click()" title="Image"><i
+                        class="fas fa-image"></i></button>
+                <button class="tool-btn" onclick="centerCanvas()" title="Center"><i
+                        class="fas fa-compress-arrows-alt"></i></button>
+            </div>
         </div>
-        <div class="stat-box">
-            <div class="stat-label">DIFFICULTY</div>
-            <div class="stat-value" id="lvl-display">NORMAL</div>
+
+        <button id="exit-zen-btn" onclick="toggleZen()">Exit Zen Mode (ESC)</button>
+
+        <div id="view-moodboard" class="view-layer active">
+            <div id="mb-viewport">
+                <div id="mb-canvas"></div>
+            </div>
         </div>
-        <div class="stat-box">
-            <div class="stat-label">STREAK</div>
-            <div class="stat-value" id="streak">0</div>
+
+        <div id="view-notepad" class="view-layer">
+            <div id="notepad-container">
+                <div id="notepad-editor" contenteditable="true" spellcheck="false"></div>
+            </div>
         </div>
     </div>
 
-    <div class="game-container">
-        <div class="nav-bar">
-            <button class="nav-btn" id="btn-prev" onclick="navigate(-1)">← Prev</button>
-            <span style="font-family:'Consolas',monospace; color:#888" id="prog-display">Loading...</span>
-            <button class="nav-btn" id="btn-next" onclick="navigate(1)">Skip →</button>
-        </div>
-
-        <div class="code-window">
-            <pre id="code-block"></pre>
-        </div>
-
-        <div class="controls" id="options-area"></div>
-
-        <div class="hint-section">
-            <button class="hint-btn" id="hint-trigger" onclick="showHint()">Show Hint (-5 pts)</button>
-            <div class="hint-text" id="hint-display"></div>
-        </div>
-    </div>
-
-    <div class="forge-container">
-        <div class="forge-header">THE FORGE (Scratchpad)</div>
-        <div class="ide-wrapper">
-            <pre class="ide-layer" id="highlight-layer"></pre>
-            <textarea class="ide-layer" id="input-layer" spellcheck="false"
-                placeholder="# Type your Python code here...&#10;# It will auto-highlight." oninput="handleInput()"
-                onkeydown="handleTab(event)" onscroll="syncScroll()"></textarea>
-        </div>
-    </div>
+    <input type="file" id="img-input" style="display:none" accept="image/*" multiple onchange="handleImageUpload(this)">
+    <input type="file" id="json-input" style="display:none" accept=".json" onchange="handleImport(this)">
+    <div id="toast"></div>
+    <script id="app-data" type="application/json">{"projects":[]}</script>
 
     <script>
-        // --- MASTER DATABASE: 40 QUESTIONS ---
-        const db = [
-            // ==========================================
-            // LEVEL 1: NORMAL (Warm Up)
-            // ==========================================
-            {
-                level: "Normal",
-                code: "x = 'Python'\nprint(x[1:4])",
-                options: ["Pyt", "yth", "ytho", "Pyth"],
-                answer: 1,
-                hint: "Slicing is [start:stop]. Index 1 is 'y'. It stops BEFORE index 4 ('o').",
-                userChoice: null
-            },
-            {
-                level: "Normal",
-                code: "def add(a, b):\n    return a + b\n\nprint(add(10, '20'))",
-                options: ["30", "1020", "Error", "None"],
-                answer: 2,
-                hint: "Python is strongly typed. You cannot mathematically add an int (10) to a str ('20').",
-                userChoice: null
-            },
-            {
-                level: "Normal",
-                code: "print(bool([]) or bool(0) or bool(' '))",
-                options: ["True", "False", "Error", "None"],
-                answer: 0,
-                hint: "Empty lists and 0 are False. A string with a space ' ' is not empty, so it is True.",
-                userChoice: null
-            },
-            {
-                level: "Normal",
-                code: "x = [1, 2, 3]\nx.append([4, 5])\nprint(len(x))",
-                options: ["5", "4", "3", "Error"],
-                answer: 1,
-                hint: "append() adds a SINGLE element. The list becomes [1, 2, 3, [4, 5]]. Length is 4.",
-                userChoice: null
-            },
-            {
-                level: "Normal",
-                code: "name = 'Alice'\nprint(f'{name:*^10}')",
-                options: ["Alice*****", "**Alice***", "Alice", "*****Alice"],
-                answer: 1,
-                hint: "The format specifier ^10 centers the text in 10 spaces. The * fills the empty space.",
-                userChoice: null
-            },
-            {
-                level: "Normal",
-                code: "x = 10\ny = 5\nprint(x // y)",
-                options: ["2.0", "2", "50", "Error"],
-                answer: 1,
-                hint: "The // operator is 'floor division'. It discards the decimal, returning an integer.",
-                userChoice: null
-            },
-            {
-                level: "Normal",
-                code: "a = {1, 2, 2, 3}\nprint(len(a))",
-                options: ["4", "3", "2", "Error"],
-                answer: 1,
-                hint: "Curly braces {} create a Set. Sets automatically remove duplicate values.",
-                userChoice: null
-            },
-            {
-                level: "Normal",
-                code: "print('apple'.replace('p', 'b', 1))",
-                options: ["abble", "abple", "apple", "Error"],
-                answer: 1,
-                hint: "The third argument (1) limits the replacement to the first occurrence only.",
-                userChoice: null
-            },
+        // --- CORE DATA ---
+        let projects = [];
+        let activeProjectId = null;
+        let activeTab = 'moodboard';
+        let zoomLevel = 1;
 
-            // ==========================================
-            // LEVEL 2: CHALLENGING (The Climb)
-            // ==========================================
-            {
-                level: "Challenging",
-                code: "d = {'a': 1, 'b': 2}\nprint(d.get('c', 3))",
-                options: ["None", "Error", "3", "1"],
-                answer: 2,
-                hint: "d.get(key, default) returns the default value (3) if the key ('c') is missing.",
-                userChoice: null
-            },
-            {
-                level: "Challenging",
-                code: "x = [1, 2, 3]\ny = x\ny.append(4)\nprint(x)",
-                options: ["[1, 2, 3]", "[1, 2, 3, 4]", "Error", "None"],
-                answer: 1,
-                hint: "Assignments in Python copy the REFERENCE, not the data. x and y point to the same list.",
-                userChoice: null
-            },
-            {
-                level: "Challenging",
-                code: "print(3 * '7')",
-                options: ["21", "777", "Error", "37"],
-                answer: 1,
-                hint: "Multiplying a string repeats it. '7' repeated 3 times is '777'.",
-                userChoice: null
-            },
-            {
-                level: "Challenging",
-                code: "a = [1, 2, 3]\ndel a[:]\nprint(a)",
-                options: ["None", "[]", "Error", "[1, 2, 3]"],
-                answer: 1,
-                hint: "Deleting a slice [:] clears the contents of the list but keeps the list object alive.",
-                userChoice: null
-            },
-            {
-                level: "Challenging",
-                code: "def func(x=[]):\n    pass\n\nprint(func())",
-                options: ["[]", "None", "Error", "Pass"],
-                answer: 1,
-                hint: "If a function doesn't explicitly return a value, it returns None by default.",
-                userChoice: null
-            },
-            {
-                level: "Challenging",
-                code: "x = True\ny = False\nprint(x or y and False)",
-                options: ["True", "False", "Error", "None"],
-                answer: 0,
-                hint: "'and' has higher precedence than 'or'. Evaluates as: True or (False and False).",
-                userChoice: null
-            },
-            {
-                level: "Challenging",
-                code: "nums = [1, 2, 3]\nnums[1] = [4, 5]\nprint(len(nums))",
-                options: ["3", "4", "5", "Error"],
-                answer: 0,
-                hint: "You replaced ONE element (index 1) with a list. The list length is still 3.",
-                userChoice: null
-            },
-            {
-                level: "Challenging",
-                code: "x = (1)\nprint(type(x))",
-                options: ["tuple", "int", "list", "Error"],
-                answer: 1,
-                hint: "A tuple with one item needs a trailing comma (1,). Without it, it's just a math parentheses.",
-                userChoice: null
-            },
+        const calmColors = ['#ffecb3', '#dcedc8', '#b3e5fc', '#e1bee7', '#ffcdd2', '#f5f5f5'];
 
-            // ==========================================
-            // LEVEL 3: INTENSE (Sweating)
-            // ==========================================
-            {
-                level: "Intense",
-                code: "res = [x for x in range(3) if x % 2 == 0]\nprint(res)",
-                options: ["[0, 2]", "[0, 1, 2]", "[2]", "[1]"],
-                answer: 0,
-                hint: "Range(3) yields 0, 1, 2. 0%2 is 0 (True). 1%2 is 1 (False). 2%2 is 0 (True).",
-                userChoice: null
-            },
-            {
-                level: "Intense",
-                code: "def func(a, *args, b):\n    return b\n\nprint(func(1, 2, 3, b=4))",
-                options: ["4", "3", "Error", "None"],
-                answer: 0,
-                hint: "*args absorbs extra positional arguments (2, 3). 'b' must be named explicitly.",
-                userChoice: null
-            },
-            {
-                level: "Intense",
-                code: "print(all([]))",
-                options: ["True", "False", "Error", "None"],
-                answer: 0,
-                hint: "The all() function returns True if the iterable is empty (vacuously true).",
-                userChoice: null
-            },
-            {
-                level: "Intense",
-                code: "x = {1, 2, 3}\nx.add(2)\nx.add(2)\nprint(len(x))",
-                options: ["5", "4", "3", "Error"],
-                answer: 2,
-                hint: "Sets only store unique elements. Adding 2 again does nothing.",
-                userChoice: null
-            },
-            {
-                level: "Intense",
-                code: "a = [1, 2]\nb = a\na = [3, 4]\nprint(b)",
-                options: ["[1, 2]", "[3, 4]", "Error", "None"],
-                answer: 0,
-                hint: "Assigning 'a = [3, 4]' creates a NEW list. 'b' is still pointing to the OLD list.",
-                userChoice: null
-            },
-            {
-                level: "Intense",
-                code: "i = 1\nwhile i < 5:\n    if i == 3:\n        break\n    i += 1\nelse:\n    i = 99\nprint(i)",
-                options: ["99", "5", "3", "4"],
-                answer: 2,
-                hint: "The 'else' block of a loop ONLY runs if the loop finishes naturally (no break).",
-                userChoice: null
-            },
-            {
-                level: "Intense",
-                code: "x = lambda a, b: a if a > b else b\nprint(x(10, 5))",
-                options: ["5", "10", "True", "False"],
-                answer: 1,
-                hint: "This is a lambda with a ternary operator. It returns the max of the two numbers.",
-                userChoice: null
-            },
-            {
-                level: "Intense",
-                code: "keys = ['a', 'b', 'c']\nvals = [1, 2]\nd = dict(zip(keys, vals))\nprint(len(d))",
-                options: ["3", "2", "Error", "0"],
-                answer: 1,
-                hint: "zip() stops at the shortest list. 'c' is ignored.",
-                userChoice: null
-            },
-
-            // ==========================================
-            // LEVEL 4: RIDICULOUS (Mental Fatigue)
-            // ==========================================
-            {
-                level: "Ridiculous",
-                code: "x = (1, 2, [3])\nx[2].append(4)\nprint(x)",
-                options: ["(1, 2, [3, 4])", "Error", "(1, 2, [3])", "Immutable Error"],
-                answer: 0,
-                hint: "Tuples are immutable, but they store references. The LIST inside is still mutable.",
-                userChoice: null
-            },
-            {
-                level: "Ridiculous",
-                code: "def gen():\n    yield 1\n    return 2\n\ng = gen()\nprint(next(g))",
-                options: ["1", "2", "Error", "None"],
-                answer: 0,
-                hint: "The first next() hits the yield. The return value is only seen in the StopIteration exception.",
-                userChoice: null
-            },
-            {
-                level: "Ridiculous",
-                code: "class A:\n    x = 1\n\na1 = A()\na2 = A()\na1.x = 2\nprint(a2.x)",
-                options: ["1", "2", "Error", "None"],
-                answer: 0,
-                hint: "a1.x = 2 creates an INSTANCE variable for a1. a2.x still looks up the CLASS variable.",
-                userChoice: null
-            },
-            {
-                level: "Ridiculous",
-                code: "print(type(lambda:None))",
-                options: ["<class 'function'>", "<class 'lambda'>", "<class 'NoneType'>", "Error"],
-                answer: 0,
-                hint: "In Python, a lambda is just a shorthand for creating a standard function object.",
-                userChoice: null
-            },
-            {
-                level: "Ridiculous",
-                code: "x = 10\ndef foo():\n    print(x)\n    x = 5\n\nfoo()",
-                options: ["10", "5", "Error", "None"],
-                answer: 2,
-                hint: "UnboundLocalError! Python sees 'x = 5' and treats 'x' as local, so print(x) fails before assignment.",
-                userChoice: null
-            },
-            {
-                level: "Ridiculous",
-                code: "a = [10, 20]\nb = a[:]\nprint(a is b, a == b)",
-                options: ["True True", "False True", "True False", "False False"],
-                answer: 1,
-                hint: "'is' checks identity (memory address). '==' checks value. Slicing creates a NEW copy.",
-                userChoice: null
-            },
-            {
-                level: "Ridiculous",
-                code: "try:\n    raise Exception\nexcept BaseException:\n    print('A')\nexcept Exception:\n    print('B')",
-                options: ["A", "B", "A B", "Error"],
-                answer: 0,
-                hint: "BaseException is the parent of Exception. It catches it first.",
-                userChoice: null
-            },
-            {
-                level: "Ridiculous",
-                code: "x = True\nprint(isinstance(x, int))",
-                options: ["True", "False", "Error", "None"],
-                answer: 0,
-                hint: "In Python, Booleans are a subclass of Integers (True is 1, False is 0).",
-                userChoice: null
-            },
-
-            // ==========================================
-            // LEVEL 5: INFERNO (Pure Evil)
-            // ==========================================
-            {
-                level: "Inferno",
-                code: "def extend(val, t=[]):\n    t.append(val)\n    return t\n\nl1 = extend(10)\nl2 = extend(123, [])\nl3 = extend('a')\n\nprint(l1)",
-                options: ["[10]", "[10, 'a']", "[10, 123, 'a']", "Error"],
-                answer: 1,
-                hint: "Mutable Default Argument trap! l1 and l3 share the SAME default list object in memory.",
-                userChoice: null
-            },
-            {
-                level: "Inferno",
-                code: "f = [lambda: i for i in range(3)]\nprint(f[0]())",
-                options: ["0", "2", "None", "Error"],
-                answer: 1,
-                hint: "Late Binding Closure! The lambda looks up 'i' when CALLED, not when defined. Loop is done, i=2.",
-                userChoice: null
-            },
-            {
-                level: "Inferno",
-                code: "a = 256\nb = 256\nc = 257\nd = 257\nprint(a is b, c is d)",
-                options: ["True True", "True False", "False True", "False False"],
-                answer: 1,
-                hint: "Python 'interns' small integers (-5 to 256). They share memory. Larger ints usually don't.",
-                userChoice: null
-            },
-            {
-                level: "Inferno",
-                code: "x = [[]] * 3\nx[0].append(1)\nprint(x)",
-                options: ["[[1], [], []]", "[[1], [1], [1]]", "[[1]]", "Error"],
-                answer: 1,
-                hint: "Using * on a list containing mutable objects duplicates the REFERENCES. All 3 items are the same list.",
-                userChoice: null
-            },
-            {
-                level: "Inferno",
-                code: "class A: pass\nclass B(A): pass\nclass C(A): pass\nclass D(B, C): pass\nprint(D.mro())",
-                options: ["D, B, C, A", "D, C, B, A", "D, A, B, C", "Error"],
-                answer: 0,
-                hint: "Method Resolution Order (C3 Linearization). D -> B -> C -> A.",
-                userChoice: null
-            },
-            {
-                level: "Inferno",
-                code: "d = {True: 'yes', 1: 'no', 1.0: 'maybe'}\nprint(d)",
-                options: ["{True:'yes', 1:'no', 1.0:'maybe'}", "{True:'maybe'}", "{1.0:'maybe'}", "Error"],
-                answer: 2,
-                hint: "True, 1, and 1.0 all have the same hash and are equal. They overwrite each other. The KEY remains the first one (True or 1), value updates.",
-                userChoice: null
-            },
-            {
-                level: "Inferno",
-                code: "def f(x):\n    return x\n\nprint(f(x=1, x=2))",
-                options: ["1", "2", "Error", "None"],
-                answer: 2,
-                hint: "SyntaxError! You cannot pass the same keyword argument twice.",
-                userChoice: null
-            },
-            {
-                level: "Inferno",
-                code: "nan = float('nan')\nprint(nan == nan)",
-                options: ["True", "False", "Error", "None"],
-                answer: 1,
-                hint: "By definition, IEEE 754 floating point NaN is not equal to anything, including itself.",
-                userChoice: null
-            }
-        ];
-
-        // --- LOGIC ENGINE ---
-        let qIdx = 0;
-        let score = 0;
-        let streak = 0;
-
-        const els = {
-            code: document.getElementById('code-block'),
-            opts: document.getElementById('options-area'),
-            score: document.getElementById('score'),
-            streak: document.getElementById('streak'),
-            lvl: document.getElementById('lvl-display'),
-            hintBtn: document.getElementById('hint-trigger'),
-            hintTxt: document.getElementById('hint-display'),
-            prog: document.getElementById('prog-display'),
-            prev: document.getElementById('btn-prev'),
-            next: document.getElementById('btn-next'),
-            input: document.getElementById('input-layer'),
-            high: document.getElementById('highlight-layer')
+        // --- INIT ---
+        window.onload = () => {
+            loadData();
+            if (projects.length === 0) createProject("Note_index");
+            else loadProject(projects[0].id);
         };
 
-        // 1. HIGHLIGHTER ENGINE (REGEX)
-        function highlight(code) {
-            // Escape HTML
-            let text = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-            // Define Patterns (Order matters!)
-            // Strings
-            text = text.replace(/(".*?"|'.*?')/g, '<span class="str">$1</span>');
-            // Comments
-            text = text.replace(/(#.*)/g, '<span class="cmt">$1</span>');
-            // Keywords
-            const kws = ["def", "class", "return", "if", "else", "elif", "for", "while", "in", "import", "from", "print", "try", "except", "lambda", "yield", "None", "True", "False"];
-            // We use a regex constructor to match whole words only (\b)
-            kws.forEach(kw => {
-                const re = new RegExp(`\\b(${kw})\\b`, 'g');
-                text = text.replace(re, '<span class="kw">$1</span>');
-            });
-            // Numbers
-            text = text.replace(/\b(\d+)\b/g, '<span class="num">$1</span>');
-            // Functions (naive: word followed by parenthesis)
-            text = text.replace(/\b([a-zA-Z_]\w*)\s*\(/g, '<span class="fn">$1</span>(');
-
-            return text;
-        }
-
-        // 2. GAME FUNCTIONS
-        function loadQuestion() {
-            if (qIdx < 0) qIdx = 0;
-            if (qIdx >= db.length) {
-                els.code.innerHTML = "<span class='cmt'># ALL QUESTIONS COMPLETE\n# SCORE: " + score + "</span>";
-                els.opts.innerHTML = "";
+        // --- KEYBOARD HANDLER ---
+        document.addEventListener('keydown', (e) => {
+            // 1. ESC -> Exit Zen
+            if (e.key === 'Escape' && document.body.classList.contains('zen-active')) {
+                toggleZen();
                 return;
             }
 
-            const q = db[qIdx];
+            // 2. Alt/Ctrl + Tab -> Switch View
+            if (e.key === 'Tab' && (e.altKey || e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                const newTab = activeTab === 'moodboard' ? 'notepad' : 'moodboard';
+                switchTab(newTab);
+                showToast(`Switched to: ${newTab.charAt(0).toUpperCase() + newTab.slice(1)}`);
+                return;
+            }
 
-            // Apply Highlight
-            els.code.innerHTML = highlight(q.code);
+            // 3. DELETE -> Remove Selected Item
+            const isTyping = e.target.tagName === 'INPUT' ||
+                e.target.tagName === 'TEXTAREA' ||
+                e.target.isContentEditable;
 
-            // Update UI
-            els.lvl.innerText = q.level.toUpperCase();
-            els.lvl.style.color = getLevelColor(q.level);
-            els.prog.innerText = `${qIdx + 1} / ${db.length}`;
-            els.hintTxt.innerText = q.hint;
-            els.hintTxt.style.display = 'none';
-
-            // Buttons
-            els.prev.disabled = (qIdx === 0);
-            els.next.innerText = (q.userChoice !== null) ? "Next →" : "Skip →";
-            els.hintBtn.style.display = (q.userChoice !== null) ? 'none' : 'inline-block';
-
-            // Render Options
-            els.opts.innerHTML = '';
-            q.options.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.className = 'btn';
-                btn.innerText = opt;
-
-                if (q.userChoice !== null) {
-                    btn.disabled = true;
-                    if (idx === q.answer) btn.classList.add('correct');
-                    else if (idx === q.userChoice) btn.classList.add('wrong');
-                } else {
-                    btn.onclick = () => submitAnswer(idx);
+            if (e.key === 'Delete' && !isTyping && activeTab === 'moodboard') {
+                const selected = document.querySelector('.mb-item.selected');
+                if (selected) {
+                    selected.remove();
+                    saveCurrent();
+                    showToast("Item deleted");
                 }
-                els.opts.appendChild(btn);
+                return;
+            }
+
+            // 4. SPACE -> Zen Mode
+            if (e.code === 'Space' && !isTyping) {
+                e.preventDefault();
+                toggleZen();
+            }
+        });
+
+        function toggleZen() {
+            document.body.classList.toggle('zen-active');
+            window.dispatchEvent(new Event('resize'));
+        }
+
+        // --- MOUSE ZOOM ---
+        const mbViewport = document.getElementById('mb-viewport');
+        const mbCanvas = document.getElementById('mb-canvas');
+
+        mbViewport.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const rect = mbCanvas.getBoundingClientRect();
+                const mouseX = (e.clientX - rect.left) / zoomLevel;
+                const mouseY = (e.clientY - rect.top) / zoomLevel;
+
+                const delta = -e.deltaY;
+                const newZoom = Math.min(Math.max(0.1, zoomLevel + (delta > 0 ? 0.1 : -0.1)), 5);
+                zoomLevel = newZoom;
+                mbCanvas.style.transform = `scale(${zoomLevel})`;
+
+                // Center zoom correction
+                const viewportMouseX = e.clientX - mbViewport.getBoundingClientRect().left;
+                const viewportMouseY = e.clientY - mbViewport.getBoundingClientRect().top;
+
+                mbViewport.scrollLeft = (mouseX * newZoom) - viewportMouseX;
+                mbViewport.scrollTop = (mouseY * newZoom) - viewportMouseY;
+
+                showToast(`Zoom: ${Math.round(zoomLevel * 100)}%`);
+            }
+        }, { passive: false });
+
+        function centerCanvas() {
+            // Center of 15000px canvas
+            mbViewport.scrollLeft = (15000 - mbViewport.clientWidth) / 2;
+            mbViewport.scrollTop = (15000 - mbViewport.clientHeight) / 2;
+            zoomLevel = 1;
+            mbCanvas.style.transform = `scale(1)`;
+        }
+
+        // --- PROJECT MANAGEMENT ---
+        function createProject(nameOverride) {
+            saveCurrent();
+            const id = 'p' + Date.now();
+            const name = nameOverride || prompt("Project Name:", "New Project");
+            if (!name) return;
+
+            // Default Gray Note at center of 15000x15000
+            const cx = 7500;
+            const cy = 7500;
+
+            const defaultNote = `
+                <div class="mb-item mb-note" style="left: ${cx - 150}px; top: ${cy - 150}px; width: 300px; height: 300px; background-color: #444;">
+                    <div class="drag-handle-bar"></div>
+                    <div class="note-content" contenteditable="true">
+                        <b>${name}</b><br>Start dragging this gray square...
+                    </div>
+                    <div class="resize-handle"></div>
+                </div>
+            `;
+
+            projects.unshift({
+                id, name,
+                timestamp: Date.now(),
+                noteHTML: `<h1>${name}</h1><p>Start here...</p>`,
+                boardHTML: defaultNote,
+                zoom: 1
+            });
+            renderSidebar();
+            loadProject(id);
+        }
+
+        function loadProject(id) {
+            saveCurrent();
+            const p = projects.find(x => x.id === id);
+            if (!p) return;
+            activeProjectId = id;
+
+            document.getElementById('notepad-editor').innerHTML = p.noteHTML;
+            document.getElementById('mb-canvas').innerHTML = p.boardHTML;
+            zoomLevel = p.zoom || 1;
+            mbCanvas.style.transform = `scale(${zoomLevel})`;
+
+            // Re-attach listeners
+            document.querySelectorAll('.mb-item').forEach(el => setupItemInteractions(el));
+
+            renderSidebar();
+            centerCanvas();
+        }
+
+        function saveCurrent() {
+            if (!activeProjectId) return;
+            const p = projects.find(x => x.id === activeProjectId);
+            if (p) {
+                p.noteHTML = document.getElementById('notepad-editor').innerHTML;
+                p.boardHTML = document.getElementById('mb-canvas').innerHTML;
+                p.zoom = zoomLevel;
+                p.timestamp = Date.now();
+                saveLocal();
+            }
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('file-list');
+            list.innerHTML = '';
+            projects.forEach(p => {
+                const el = document.createElement('div');
+                el.className = `file-item ${p.id === activeProjectId ? 'active' : ''}`;
+                el.innerHTML = `
+                    <div class="file-name">${p.name} <div class="file-opt"><i class="fas fa-trash" onclick="deleteProj(event, '${p.id}')"></i></div></div>
+                    <div class="file-meta">${new Date(p.timestamp).toLocaleDateString()}</div>
+                `;
+                el.onclick = () => loadProject(p.id);
+                list.appendChild(el);
             });
         }
 
-        function submitAnswer(idx) {
-            const q = db[qIdx];
-            q.userChoice = idx;
+        function deleteProj(e, id) {
+            e.stopPropagation();
+            if (!confirm("Delete?")) return;
+            projects = projects.filter(p => p.id !== id);
+            if (projects.length === 0) createProject("Note_index");
+            else loadProject(projects[0].id);
+        }
 
-            if (idx === q.answer) {
-                score += 10 + (streak * 2);
-                streak++;
+        // --- CREATION ---
+        function addStickyNote() {
+            const x = (mbViewport.scrollLeft + mbViewport.clientWidth / 2) / zoomLevel - 125;
+            const y = (mbViewport.scrollTop + mbViewport.clientHeight / 2) / zoomLevel - 125;
+            createStickyAt(x, y);
+        }
+
+        function createStickyAt(x, y) {
+            switchTab('moodboard');
+
+            // Calculate Index
+            const count = document.querySelectorAll('.mb-note').length + 1;
+            const title = `Note_${count}`;
+
+            const el = document.createElement('div');
+            el.className = 'mb-item mb-note';
+            el.style.left = x + 'px'; el.style.top = y + 'px';
+            // Square Start
+            el.style.width = '250px';
+            el.style.height = '250px';
+
+            const randomColor = calmColors[Math.floor(Math.random() * calmColors.length)];
+            el.style.backgroundColor = randomColor;
+
+            el.innerHTML = `
+                <div class="drag-handle-bar"></div>
+                <div class="note-content" contenteditable="true"><b>${title}</b><br></div>
+                <div class="resize-handle"></div>
+            `;
+
+            setupItemInteractions(el);
+            mbCanvas.appendChild(el);
+
+            // Focus and Blink Cursor
+            setTimeout(() => {
+                const content = el.querySelector('.note-content');
+                content.focus();
+                // Place cursor at end
+                const range = document.createRange();
+                range.selectNodeContents(content);
+                range.collapse(false);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }, 50);
+        }
+
+        function handleImageUpload(input) {
+            if (!input.files.length) return;
+            switchTab('moodboard');
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const el = document.createElement('div');
+                el.className = 'mb-item mb-image';
+                const x = (mbViewport.scrollLeft + mbViewport.clientWidth / 2) / zoomLevel - 125;
+                const y = (mbViewport.scrollTop + mbViewport.clientHeight / 2) / zoomLevel - 100;
+                el.style.left = x + 'px'; el.style.top = y + 'px';
+                el.style.width = '250px';
+                el.innerHTML = `<div class="drag-handle-bar" style="position:absolute;top:0;height:100%;opacity:0;"></div><img src="${e.target.result}"><div class="resize-handle"></div>`;
+                setupItemInteractions(el);
+                mbCanvas.appendChild(el);
+            };
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
+
+        // --- INTERACTION ---
+        let dragged = null;
+        let resizing = null;
+        let dx = 0, dy = 0;
+        let r_w = 0, r_h = 0, r_mx = 0, r_my = 0;
+
+        function setupItemInteractions(el) {
+            el.onmousedown = (e) => {
+                if (e.target.classList.contains('resize-handle')) {
+                    initResize(e, el);
+                    return;
+                }
+                // Text Editing
+                if (e.target.classList.contains('note-content') || e.target.isContentEditable) {
+                    e.stopPropagation();
+                    return;
+                }
+                // Dragging
+                dragged = el;
+                document.querySelectorAll('.mb-item').forEach(i => i.classList.remove('selected'));
+                el.classList.add('selected');
+
+                const rect = el.getBoundingClientRect();
+                dx = (e.clientX - rect.left) / zoomLevel;
+                dy = (e.clientY - rect.top) / zoomLevel;
+            };
+        }
+
+        window.onmousemove = (e) => {
+            if (dragged) {
+                const rect = mbCanvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / zoomLevel - dx;
+                const y = (e.clientY - rect.top) / zoomLevel - dy;
+                dragged.style.left = x + 'px';
+                dragged.style.top = y + 'px';
+            }
+            if (resizing) {
+                const w = r_w + (e.clientX - r_mx) / zoomLevel;
+                const h = r_h + (e.clientY - r_my) / zoomLevel;
+                resizing.style.width = Math.max(50, w) + 'px';
+                resizing.style.height = Math.max(50, h) + 'px';
+            }
+        };
+
+        window.onmouseup = () => { dragged = null; resizing = null; saveCurrent(); };
+
+        function initResize(e, el) {
+            e.stopPropagation();
+            e.preventDefault();
+            resizing = el;
+            r_w = parseFloat(el.style.width || el.offsetWidth);
+            r_h = parseFloat(el.style.height || el.offsetHeight);
+            r_mx = e.clientX;
+            r_my = e.clientY;
+        }
+
+        mbCanvas.addEventListener('dblclick', (e) => {
+            if (e.target !== mbCanvas) return;
+            const rect = mbCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / zoomLevel;
+            const y = (e.clientY - rect.top) / zoomLevel;
+            createStickyAt(x - 125, y - 125);
+        });
+
+        // --- TABS & TOOLS ---
+        function switchTab(t) {
+            activeTab = t;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.view-layer').forEach(l => l.classList.remove('active'));
+            document.getElementById('btn-' + t).classList.add('active');
+            document.getElementById('view-' + t).classList.add('active');
+        }
+
+        function execCmd(c, v) {
+            document.execCommand(c, false, v);
+            if (activeTab === 'moodboard' && document.activeElement.classList.contains('note-content')) {
+                document.activeElement.focus();
+            }
+        }
+
+        function applyColor(c) {
+            if (activeTab === 'notepad') {
+                execCmd('foreColor', c);
             } else {
-                streak = 0;
-            }
-            updateStats();
-            loadQuestion(); // Reloads to show locked state
-        }
-
-        function navigate(dir) {
-            if (qIdx + dir >= 0 && qIdx + dir < db.length) {
-                qIdx += dir;
-                loadQuestion();
+                document.querySelectorAll('.mb-item.selected').forEach(el => {
+                    if (el.classList.contains('mb-note')) {
+                        el.style.backgroundColor = c;
+                    }
+                });
             }
         }
 
-        function showHint() {
-            els.hintTxt.style.display = 'block';
-            score = Math.max(0, score - 5);
-            updateStats();
-            els.hintBtn.style.display = 'none';
+        // --- DATA ---
+        function saveLocal() { localStorage.setItem('picha_data_v2', JSON.stringify(projects)); }
+        function loadData() {
+            try {
+                const embedded = JSON.parse(document.getElementById('app-data').textContent);
+                if (embedded.projects && embedded.projects.length) { projects = embedded.projects; return; }
+            } catch (e) { }
+            const loc = localStorage.getItem('picha_data_v2');
+            if (loc) projects = JSON.parse(loc);
         }
 
-        function updateStats() {
-            els.score.innerText = score;
-            els.streak.innerText = streak;
+        function saveSelf() {
+            saveCurrent();
+            let html = document.documentElement.outerHTML;
+            const data = JSON.stringify({ projects });
+            html = html.replace(/(<script id="app-data" type="application\/json">)([\s\S]*?)(<\/script>)/, `$1${data}$3`);
+            download(new Blob([html], { type: 'text/html' }), `Picha_Notebook_${Date.now()}.html`);
         }
 
-        function getLevelColor(level) {
-            switch (level) {
-                case 'Normal': return '#2ecc71';
-                case 'Challenging': return '#f1c40f';
-                case 'Intense': return '#e67e22';
-                case 'Ridiculous': return '#e74c3c';
-                case 'Inferno': return '#8e44ad';
-                default: return '#fff';
-            }
+        function exportProject() {
+            saveCurrent();
+            const p = projects.find(x => x.id === activeProjectId);
+            download(new Blob([JSON.stringify(p)], { type: 'application/json' }), `${p.name}.json`);
+        }
+        function backupAll() {
+            saveCurrent();
+            download(new Blob([JSON.stringify(projects)], { type: 'application/json' }), `Backup_All_${Date.now()}.json`);
         }
 
-        // 3. SCRATCHPAD FUNCTIONS
-        function handleInput() {
-            const text = els.input.value;
-            els.high.innerHTML = highlight(text) + "\n"; // Add newline to sync scroll
+        function triggerImport() { document.getElementById('json-input').click(); }
+        function handleImport(input) {
+            const fr = new FileReader();
+            fr.onload = (e) => {
+                try {
+                    const d = JSON.parse(e.target.result);
+                    if (Array.isArray(d)) { projects = d; }
+                    else { d.id = 'imp' + Date.now(); projects.unshift(d); }
+                    renderSidebar(); loadProject(projects[0].id);
+                } catch (err) { alert("Invalid JSON"); }
+            };
+            fr.readAsText(input.files[0]);
         }
 
-        function syncScroll() {
-            els.high.scrollTop = els.input.scrollTop;
-            els.high.scrollLeft = els.input.scrollLeft;
+        function download(blob, name) {
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
         }
-
-        function handleTab(e) {
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                const start = els.input.selectionStart;
-                const end = els.input.selectionEnd;
-                els.input.value = els.input.value.substring(0, start) + "    " + els.input.value.substring(end);
-                els.input.selectionStart = els.input.selectionEnd = start + 4;
-                handleInput();
-            }
-        }
-
-        // INIT
-        try {
-            loadQuestion();
-        } catch (e) {
-            alert("System Critical: JS Failed to Load. " + e.message);
+        function showToast(msg) {
+            const t = document.getElementById('toast'); t.innerText = msg; t.style.opacity = 1;
+            setTimeout(() => t.style.opacity = 0, 2000);
         }
     </script>
 </body>
